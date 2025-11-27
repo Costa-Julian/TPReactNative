@@ -2,19 +2,20 @@
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Button,
     FlatList,
     StyleSheet,
     Text,
     TextInput,
-    View,
+    View
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPost, fetchPosts } from '../features/posts/postsSlice';
 
 const HomeScreen = () => {
     const dispatch = useDispatch();
-    const { items, status, error } = useSelector((state) => state.posts);
+    const { items, status, error,createStatus,createError } = useSelector((state) => state.posts);
 
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
@@ -23,12 +24,25 @@ const HomeScreen = () => {
         // Al montar, obtener publicaciones
         dispatch(fetchPosts());
     }, [dispatch]);
+    useEffect(() => {
+        if (createStatus === 'succeeded') {
+            Alert.alert("¡Éxito!", "La publicación se creó correctamente.");
+        }
+    }, [createStatus]);
+    useEffect(() => {
+        if (createStatus === 'failed' && createError) {
+            Alert.alert("Error", createError);
+        }
+    }, [createStatus, createError]);
 
     const handleAddPost = () => {
         if (!title.trim() || !body.trim()) {
-        // Acá podrían mostrar un Toast/Alert en la consigna
+        Alert.alert(
+            "Campos incompletos",
+            "Por favor completá título y contenido antes de publicar."
+        );
         return;
-        }
+}
 
     const newPost = {
         title,
@@ -44,13 +58,24 @@ const HomeScreen = () => {
     };
 
     const isLoading = status === 'loading';
+    const isCreating = createStatus === 'loading';
+
 
     return (
         <View style={styles.container}>
         <Text style={styles.header}>MiniBlog de Clases</Text>
 
-        {isLoading && <ActivityIndicator />}
-        {error && <Text style={styles.error}>{error}</Text>}
+        {isLoading && (
+            <View style={{ alignItems: 'center', marginVertical: 8 }}>
+                <ActivityIndicator />
+                <Text>Cargando publicaciones...</Text>
+            </View>
+        )}
+        {error && (
+            <Text style={styles.error}>
+                Error al obtener publicaciones: {error}
+                </Text>
+            )}
 
         <FlatList
             data={items}
@@ -72,6 +97,11 @@ const HomeScreen = () => {
 
         <View style={styles.form}>
             <Text style={styles.formTitle}>Nueva publicación</Text>
+            {createError && (
+                <Text style={styles.error}>
+                    Error al crear publicación: {createError}
+                </Text>
+                )}
             <TextInput
                 style={styles.input}
                 placeholder="Título"
@@ -86,9 +116,9 @@ const HomeScreen = () => {
                 multiline
             />
             <Button
-                title={isLoading ? 'Enviando...' : 'Publicar'}
+                title={isCreating  ? 'Enviando...' : 'Publicar'}
                 onPress={handleAddPost}
-                disabled={!title.trim() || !body.trim() || isLoading}
+                disabled={isCreating }
             />
         </View>
         </View>
