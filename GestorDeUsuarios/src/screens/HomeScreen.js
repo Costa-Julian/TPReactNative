@@ -91,16 +91,28 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 16 },
+  container: { flex: 1, paddingTop: 50, paddingHorizontal: 16, marginTop: 10 },
   header: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
   center: { alignItems: "center", marginVertical: 8 },
   card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 8,
+    padding: 10,
+    marginHorizontal: 5,
+    marginVertical: 4,
+    borderWidth: 0,
+    borderRadius: 30,
+    backgroundColor: "#fff",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 1,
+
+    elevation: 3,
   },
   avatar: { width: 56, height: 56, borderRadius: 28, marginRight: 12 },
   info: { flex: 1 },
