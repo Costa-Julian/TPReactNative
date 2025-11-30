@@ -7,6 +7,7 @@ import {
   View,
   Image,
   Alert,
+  Button,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -15,20 +16,19 @@ import {
   clearCreateStatus,
 } from "../features/users/usersSlice";
 import UserForm from "../components/UserForm";
+import Pagination from "../components/Pagination";
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
 
-  const { items, status, error } = useSelector((state) => state.users);
-
-  const { createStatus, createError } = useSelector((state) => state.users);
+  const { items, status, error, page , totalPages ,createStatus, createError} = useSelector((state) => state.users);
 
   const isLoading = status === "loading";
   const isSubmitting = createStatus === "loading";
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(fetchUsers());
+      dispatch(fetchUsers(1));
     }
   }, [dispatch, status]);
 
@@ -51,74 +51,111 @@ const HomeScreen = () => {
     dispatch(createUser(userData));
   };
 
+  const handleChangePage = (newPage) => {
+      if (newPage < 1 || newPage > totalPages) return;
+      dispatch(fetchUsers(newPage))
+
+  }
+
   return (
-    <View style={[styles.container, { paddingBottom: 150 }]}>
-      <Text style={styles.header}>Gestor de Usuarios de Prueba</Text>
+  <View style={styles.container}>
+    <Text style={styles.header}>Gestor de Usuarios de Prueba</Text>
+    <Pagination 
+        page={page} 
+        totalPages={totalPages} 
+        onChangePage={handleChangePage} 
+      />
+    {isLoading && (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text>Cargando usuarios...</Text>
+      </View>
+    )}
 
-      {isLoading && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-          <Text>Cargando usuarios...</Text>
-        </View>
-      )}
-      {status === "failed" && (
-        <Text style={styles.error}>Error al obtener usuarios: {error}</Text>
-      )}
-
-      {status === "succeeded" && (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {item.avatar && (
-                <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              )}
-              <View style={styles.info}>
-                <Text style={styles.name}>
-                  {item.first_name} {item.last_name}
-                </Text>
-                {item.email && <Text style={styles.email}>{item.email}</Text>}
-              </View>
+    {status === "succeeded" && (
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {item.avatar && (
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+            )}
+            <View style={styles.info}>
+              <Text style={styles.name}>
+                {item.first_name} {item.last_name}
+              </Text>
+              {item.email && <Text style={styles.email}>{item.email}</Text>}
             </View>
-          )}
-        />
-      )}
-
+          </View>
+        )}
+        contentContainerStyle={{ paddingBottom: 140 }}
+      />
+    )}
+    <View style={styles.paginationWrapper}>
+      <Pagination 
+        page={page} 
+        totalPages={totalPages} 
+        onChangePage={handleChangePage} 
+      />
+    </View>
+    <View style={styles.formWrapper}>
       <UserForm onSubmit={handleCreateUser} isSubmitting={isSubmitting} />
     </View>
-  );
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 16, marginTop: 10 },
-  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
-  center: { alignItems: "center", marginVertical: 8 },
+  container: {
+    flex: 1,
+    paddingTop: 50,
+    paddingHorizontal: 16,
+  },
+
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+
   card: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    marginHorizontal: 5,
-    marginVertical: 4,
-    borderWidth: 0,
     borderRadius: 30,
     backgroundColor: "#fff",
-
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 1,
-
+    marginBottom: 8,
     elevation: 3,
   },
+
   avatar: { width: 56, height: 56, borderRadius: 28, marginRight: 12 },
+
   info: { flex: 1 },
+
   name: { fontSize: 16, fontWeight: "bold" },
+
   email: { fontSize: 14, color: "#555" },
-  error: { color: "red", marginVertical: 8 },
+
+  paginationWrapper: {
+    position: "absolute",
+    bottom: 110,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+  },
+
+  formWrapper: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff",
+    paddingTop: 10,
+    paddingBottom: 20,
+    elevation: 10,
+  },
 });
 
 export default HomeScreen;

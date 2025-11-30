@@ -7,20 +7,29 @@ const initialState = {
 
   createStatus: "idle",
   createError: null,
+
+  page : 1,
+  totalPages: 1,
 };
 const API_KEY = 'reqres-free-v1';
 
-export const fetchUsers = createAsyncThunk("users/fetchUsers", async () => {
-  const response = await fetch("https://reqres.in/api/users?page=1", {
-      headers: {
-        'x-api-key': API_KEY,    
-      },
-    });
-  if (!response.ok) {
-    throw new Error("Error al obtener usuarios.");
-  }
-  const data = await response.json();
-  return data.data;
+export const fetchUsers = createAsyncThunk(
+  "users/fetchUsers", 
+  async (page = 1) => {
+    const response = await fetch(`https://reqres.in/api/users?page=${page}`, {
+        headers: {
+          'x-api-key': API_KEY,    
+        },
+      });
+    if (!response.ok) {
+      throw new Error("Error al obtener usuarios.");
+    }
+    const data = await response.json();
+    return {
+      items : data.data,
+      page : data.page,
+      totalPages : data.total_pages,
+    };
 });
 
 export const createUser = createAsyncThunk(
@@ -80,7 +89,9 @@ const usersSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload;
+        state.items = action.payload.items;
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.status = "failed";
