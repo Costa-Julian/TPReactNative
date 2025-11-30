@@ -8,9 +8,14 @@ const initialState = {
   createStatus: "idle",
   createError: null,
 };
+const API_KEY = 'reqres-free-v1';
 
 export const fetchUsers = createAsyncThunk("users/fetchUsers", async () => {
-  const response = await fetch("https://reqres.in/api/users?page=1");
+  const response = await fetch("https://reqres.in/api/users?page=1", {
+      headers: {
+        'x-api-key': API_KEY,    
+      },
+    });
   if (!response.ok) {
     throw new Error("Error al obtener usuarios.");
   }
@@ -26,7 +31,7 @@ export const createUser = createAsyncThunk(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": "reqres-free-v1",
+          "x-api-key": API_KEY,
         },
         body: JSON.stringify(userData),
       });
